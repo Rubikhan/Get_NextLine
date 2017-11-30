@@ -6,7 +6,7 @@
 /*   By: smaddux <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/26 20:46:33 by smaddux           #+#    #+#             */
-/*   Updated: 2017/11/29 15:55:52 by smaddux          ###   ########.fr       */
+/*   Updated: 2017/11/29 18:19:26 by smaddux          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include <stdlib.h>
 #include "./libft/libft.h"
 
-#define BUFF_SIZE 50
+#define BUFF_SIZE 5000
 
 int get_next_line(const int fd, char **line);
 

@@ -6,7 +6,7 @@
 /*   By: smaddux <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/27 13:53:35 by smaddux           #+#    #+#             */
-/*   Updated: 2017/11/29 15:54:28 by smaddux          ###   ########.fr       */
+/*   Updated: 2017/11/29 19:08:34 by smaddux          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,98 +15,94 @@
 #include <fcntl.h> //FOR TESTING
 #include <unistd.h> //CLOSE -- FOR TESTING IN TANDEM WITH OPEN
 
-char *olas(char *fdsingle)
+int full_file(int fd, char **fda, int rv)
 {
-	char *postnl;
-	int len = ft_strlen(fdsingle);
-	int n;
-	char *tmp = ft_strnew(len);
-	n = 0;
-	while(fdsingle[n] != '\n' && fdsingle[n]) //##//
-		n++;
-	postnl = ft_strnew(len - n);
-	tmp = ft_strsub(fdsingle, 0, n);
-	postnl = ft_strsub(fdsingle, n + 1, len - n);
-	ft_strclr(fdsingle);
-	fdsingle = ft_strcpy(fdsingle, postnl);
-//	printf("fdsingle: %s\n", fdsingle);
-	return (tmp);
+	char *temp;
+	if(!(temp = ft_strnew(BUFF_SIZE)))
+			return (-1);
+	while ((rv = read(fd, temp, BUFF_SIZE)) > 0)
+	{
+		if (!fda[0])
+			fda[0] = ft_strdup(temp); //CRUCIAL, as it ALLOCATES MEM
+		else
+			fda[0] = ft_strjoin(fda[0], temp);
+
+		free (temp);
+		if(!(temp = ft_strnew(BUFF_SIZE + 1)))
+			return (-1);
+	}
+	if (rv == -1)
+		return (-1);
+	if (*temp != 0) // ? looks at ft_strnew //MIGHT NOT NEED THIS
+	{
+		fda[0] = ft_strjoin(fda[0], temp);
+		free (temp);
+		if(!(temp = ft_strnew(BUFF_SIZE + 1)))
+			return (-1);
+		printf("LAST %s\n", fda[0]); // why didnt this print when passed Cantos?
+	}
+	return (0);
 }
 
-/*
-** type 'ulimit -n' in bash 
-** HOWEVER, someone with sudo privleges can increase this
-** So not completely portable in light of that fact
-*/
-
-static int first_entry(int fd, char **line, char **fda, int rv)
+int chrnl(char **fda, char **line)
 {
-	char *str;
 	char *chrval;
-	
-	if(!(str = ft_strnew(BUFF_SIZE)))
-		return (-1);
-	if((rv = read(fd, str, BUFF_SIZE)) == -1) 
-		return (-1);
-//	printf("FIRSTENTRY: %s", str);
-	if (fda[0] && ft_strchr(fda[0], '\n'))
-	{
-		line[0] = olas(fda[0]);
-		return(1);
-	}
-	else if(fda[0])
-		fda[0] = ft_strjoin(fda[0], str);
-	else
-		fda[0] = ft_strdup(str);;
-if (rv == 0)
-	{
-		line[0] = olas(fda[0]);
-		return (0);
-	}
-	free(str);
-	if(!(str = ft_strnew(BUFF_SIZE)))
-		return (-1);
-	while (!(chrval = ft_strchr(fda[0], '\n')) && (rv != 0))
-	{
-		rv = read(fd, str, BUFF_SIZE);
-		if(rv == 0)
-			break;
-		fda[0] = ft_strjoin(fda[0], str); //##//
-		free(str);
-		if(!(str = ft_strnew(BUFF_SIZE)))
-			return (-1);
+	char *temp;
 
+	if(!fda[0]) // see else's ft_strclr
+		return(0); // ????
+	if ((chrval = ft_strchr(fda[0], '\n')))
+	{
+		if(!(temp = ft_strnew(chrval - fda[0])))// +1?
+			return (-1);
+		
+		temp = ft_strncpy(temp, fda[0], (chrval - fda[0]));
+		fda[0] = chrval + 1;
+		chrval = NULL; // ?
+		line[0] = ft_strdup(temp);
+		free (temp);
+		return (1);
 	}
-	line[0] = olas(fda[0]);
-	free (str);
-	return rv == -1  ? 0 : 1; //Return value fuckery for 42FileChecker basic tests 
+	else if (*fda[0])
+	{
+		line[0] = ft_strdup(fda[0]);
+		fda[0] = ft_strnew(0); //THIS IS VERY CRUCIAL
+		return (1);
+	}
+	else //ITS THE END OF FILE?
+	{
+		line[0] = ft_strdup(fda[0]);
+		return (0); // changing this to 1 REALLY fucks shit up
+	}
+	return (0); //? idk ?? it shouldnt get here?
 }
 
 int get_next_line(const int fd, char **line) 
 { 
+	if (fd < 0 || fd > 4864) 
+		return (-1);
 	static char *fda[4864] ; // won't fly for norm, silences valgrind warning BUT maybe make into macro;
 	int rv;
 	
-	if(!line || fd < 0)
+	if(!line || (rv = full_file(fd, &fda[fd], 0)) == -1)
 		return (-1);
-	rv = first_entry(fd, line, &fda[fd], 0); //##//
-//	printf("rv: %d\n", rv);
+	rv =  chrnl(&fda[fd], line); //passing line T_T
 	return(rv);
-
 } 
 
-/* int main(int argc, char **argv) */
-/* { */
-/*     char *str; */
-/*     int fd; */
+/*    int main(int argc, char **argv)    */
+/*    {    */
+/*        char *str;    */
+/*        int fd;    */
 
-/*     fd = open(argv[1], O_RDONLY); */
-/*     while (get_next_line(fd, &str)) */
-/*     { */
-/*         printf("%s\n", str); */
-/*         str = NULL; */
-/*     } */
-/* } */
+/*        fd = open(argv[1], O_RDONLY);    */
+/*        while (get_next_line(fd, &str))    */
+/*        {    */
+/*            printf("%s\n", str);    */
+/*            str = NULL;    */
+/*        }    */
+/*   	 return (26);   */
+/*    }    */
 
 /*       int main(int argc, char *argv[])       */
 /*       {       */
