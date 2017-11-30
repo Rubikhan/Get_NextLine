@@ -6,7 +6,7 @@
 /*   By: smaddux <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/10/12 15:19:17 by smaddux           #+#    #+#             */
-/*   Updated: 2017/11/27 22:22:18 by smaddux          ###   ########.fr       */
+/*   Updated: 2017/11/29 22:20:09 by smaddux          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,15 +27,7 @@ char	*ft_strjoin(char const *s1, char const *s2)
 	if (a == NULL)
 		return (NULL);
 	d = 0;
-//	ft_bzero(a, (b + c + 2));
 	a = ft_strcpy(a, s1);
 	ft_strcpy(&a[b], s2);
-/* 	c = b + c; */
-/* 	while (b < c) */
-/* 	{ */
-/* 		a[b] = s2[d]; */
-/* 		b++; */
-/* 		d++; */
-/* 	} */
 	return (a);
 }
