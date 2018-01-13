@@ -6,14 +6,11 @@
 /*   By: smaddux <marvin@42.fr>                     +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2017/11/27 13:53:35 by smaddux           #+#    #+#             */
-/*   Updated: 2017/11/29 23:18:29 by smaddux          ###   ########.fr       */
+/*   Updated: 2017/11/30 17:15:57 by smaddux          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
-#include <stdio.h>
-#include <fcntl.h>
-#include <unistd.h>
 
 int	full_file(int fd, char **fda, int rv)
 {
@@ -33,15 +30,13 @@ int	full_file(int fd, char **fda, int rv)
 	}
 	if (rv == -1)
 		return (-1);
-	if (*temp != 0)
-	{
-		fda[0] = ft_strjoin(fda[0], temp);
-		free(temp);
-		if (!(temp = ft_strnew(BUFF_SIZE)))
-			return (-1);
-	}
+	free(temp);
 	return (0);
 }
+
+/*
+** ft_strdup(chrval + 1); is crucial to pass Tinfoil_Pancakes free error
+*/
 
 int	chrnl(char **fda, char **line)
 {
@@ -55,7 +50,7 @@ int	chrnl(char **fda, char **line)
 		if (!(temp = ft_strnew(chrval - fda[0])))
 			return (-1);
 		temp = ft_strncpy(temp, fda[0], (chrval - fda[0]));
-		fda[0] = chrval + 1;
+		fda[0] = ft_strdup(chrval + 1);
 		chrval = NULL;
 		line[0] = ft_strdupf(temp);
 		return (1);
@@ -81,17 +76,3 @@ int	get_next_line(const int fd, char **line)
 	rv = chrnl(&fda[fd], line);
 	return (rv);
 }
-
-/*      int main(int argc, char **argv)      */
-/*      {      */
-/*          char *str;      */
-/*          int fd;      */
-
-/*          fd = open(argv[1], O_RDONLY);      */
-/*          while (get_next_line(fd, &str))      */
-/*          {      */
-/*              printf("%s\n", str);      */
-/*              str = NULL;      */
-/*          }      */
-/*     	 return (26);     */
-/*      }      */
